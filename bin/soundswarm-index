@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+use SoundSwarm::Syntax;
+use SoundSwarm::Data;
+use Path::Class "dir";
+
+for (@ARGV) {
+	my $dir = dir($_)->absolute;
+	unless ($dir->is_dir) {
+		warn "$dir is not a directory (skipping).\n";
+		next;
+	}
+	for my $track ("SoundSwarm::Data::Track"->from_dir($dir)) {
+		$track->insert;
+	}
+}
