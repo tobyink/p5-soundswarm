@@ -66,13 +66,20 @@ use ORLite {
 		my @results = $class->select("WHERE $where", @bind);
 		
 		return @results unless $filter;
-		return grep { $filter->() } @results;
+		return grep $filter->(), @results;
 	}
+}
+
+{
+	package SoundSwarm::Data::Track::TO_JSON;
+	use Role::Tiny;
+	sub TO_JSON { +{%{+shift}} };
 }
 
 "Role::Tiny"->apply_roles_to_package(
 	"SoundSwarm::Data::Track",
 	"SoundSwarm::DataSearch",
+	"SoundSwarm::Data::Track::TO_JSON",
 );
 
 1;
