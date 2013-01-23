@@ -1,6 +1,7 @@
 package SoundSwarm::Data;
 
-use SoundSwarm::Syntax;
+use strict;
+use warnings;
 use File::Spec;
 use re ();
 
@@ -13,9 +14,11 @@ use ORLite {
 };
 
 {
-	package SoundSwarm::DataSearch;
+	package SoundSwarm::Role::Track::Search;
 	
-	use Role::Tiny;
+	use SoundSwarm::Syntax;
+	use Moo::Role;
+	
 	requires 'select';
 	
 	sub search
@@ -71,15 +74,60 @@ use ORLite {
 }
 
 {
-	package SoundSwarm::Data::Track::TO_JSON;
-	use Role::Tiny;
+	package SoundSwarm::Role::Track::ToJSON;
+	
+	use SoundSwarm::Syntax;
+	use Moo::Role;
+	
 	sub TO_JSON { +{%{+shift}} };
 }
 
-"Role::Tiny"->apply_roles_to_package(
-	"SoundSwarm::Data::Track",
-	"SoundSwarm::DataSearch",
-	"SoundSwarm::Data::Track::TO_JSON",
+{
+	package SoundSwarm::Role::Track::FromFile;
+	
+	use SoundSwarm::Syntax;
+	use Moo::Role;
+	use Music::Tag (traditional => 1);
+	use Path::Class;
+	
+	requires 'new';
+	
+	sub from_file
+	{
+		my $class = shift;
+		my ($file) = @_;
+		my $info = "Music::Tag"->new("$file", { quiet => 1 });
+		$info->get_tag;
+		return $class->new(
+			filename => "$file",
+			title    => $info->title,
+			artist   => $info->artist,
+			album    => $info->album,
+		);
+	}
+	
+	sub from_dir
+	{
+		my $class = shift;
+		my $dir   = "Path::Class::Dir"->new(@_);
+		my @return;
+		$dir->recurse(callback => sub
+		{
+			my $file = shift;
+			return if $file->is_dir;
+			return unless "$file" =~ /\.(ogg|mp3|mp4|m4a|3gp|flac)$/i;
+			push @return, $class->from_file($file);
+		});
+		return @return;
+	}
+}
+
+"Moo::Role"->apply_roles_to_package(
+	"SoundSwarm::Data::Track" => qw(
+		SoundSwarm::Role::Track::Search
+		SoundSwarm::Role::Track::ToJSON
+		SoundSwarm::Role::Track::FromFile
+	),
 );
 
 1;
