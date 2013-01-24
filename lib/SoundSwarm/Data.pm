@@ -96,6 +96,7 @@ use ORLite {
 	{
 		my $class = shift;
 		my ($file) = @_;
+		warn "Indexing $file\n";
 		my $info = "Music::Tag"->new("$file", { quiet => 1 });
 		$info->get_tag;
 		return $class->new(
