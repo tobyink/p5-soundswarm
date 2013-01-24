@@ -1,0 +1,4 @@
+#!/usr/bin/env perl
+
+use SoundSwarm::Daemon::Player;
+SoundSwarm::Daemon::Player->new->daemonize;

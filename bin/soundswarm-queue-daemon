@@ -1,0 +1,4 @@
+#!/usr/bin/env perl
+
+use SoundSwarm::Daemon::Queue;
+SoundSwarm::Daemon::Queue->new->daemonize;
