@@ -41,7 +41,7 @@ sub _jsonrpc_result
 		id      => $id || 0,
 		error   => undef,
 		result  => $result,
-	})."\n";
+	}, { convert_blessed => 1 })."\n";
 }
 
 sub _jsonrpc_error

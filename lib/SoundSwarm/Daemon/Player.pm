@@ -30,6 +30,16 @@ has default_queue_class => (
 	isa     => Str,
 );
 
+has library => (
+	is      => 'lazy',
+	isa     => InstanceOf[ 'SoundSwarm::Client::Library' ],
+);
+
+has default_library_class => (
+	is      => 'lazy',
+	isa     => Str,
+);
+
 has mplayer => (
 	is      => 'lazy',
 	isa     => InstanceOf[ 'SoundSwarm::MPlayer' ],
@@ -90,6 +100,19 @@ sub _build_default_queue_class
 	'SoundSwarm::Client::Queue';
 }
 
+sub _build_library
+{
+	my $self = shift;
+	$self->construct_instance(
+		use_package_optimistically($self->default_library_class),
+	);
+}
+
+sub _build_default_library_class
+{
+	'SoundSwarm::Client::Library';
+}
+
 sub get_song
 {
 	my $self = shift;
@@ -99,8 +122,7 @@ sub get_song
 		return $song;
 	}
 	
-	# really need to select a random song here
-	return '/media/tai/Media/unsorted_music/undertones_-_teenage_kicks.ogg';
+	return $self->library->random_track->{filename};
 }
 
 sub start_playing
