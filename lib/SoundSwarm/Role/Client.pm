@@ -24,7 +24,7 @@ sub send_line
 	my ($line) = @_;
 	
 	my $sock = $self->socket;
-	$self->log("Connected to %s:%d", $sock->sockhost, $sock->sockport);
+	$self->log("Connected to %s:%d", $sock->peerhost, $sock->peerport);
 	
 	print $sock $line;
 	my $response = <$sock>;
