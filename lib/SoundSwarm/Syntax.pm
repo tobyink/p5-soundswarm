@@ -1,6 +1,7 @@
 package SoundSwarm::Syntax;
 
 use Async ();
+use SoundSwarm;
 use Syntax::Collector -collect => q/
 	use Carp 0 qw( confess );
 	use Scalar::Util 0 qw( blessed );

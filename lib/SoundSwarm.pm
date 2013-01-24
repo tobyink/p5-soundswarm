@@ -1,22 +1,20 @@
 package SoundSwarm;
 
-use 5.010;
-use constant { false => 0, true => 1 };
 use strict;
 use warnings;
-use utf8;
+
+use constant {
+	PLAYER_PORT  => 4242,
+	QUEUE_PORT   => 4243,
+	LIBRARY_PORT => 4244,
+};
 
 BEGIN {
 	$SoundSwarm::AUTHORITY = 'cpan:TOBYINK';
 	$SoundSwarm::VERSION   = '0.001';
 }
 
-
-
-
-# Your code goes here
-
-true;
+1;
 
 __END__
 

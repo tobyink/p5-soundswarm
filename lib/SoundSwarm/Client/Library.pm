@@ -6,7 +6,7 @@ use Moo;
 has port => (
 	is      => 'lazy',
 	isa     => Int,
-	default => sub { 4244 },
+	default => sub { SoundSwarm::LIBRARY_PORT },
 );
 
 has host => (

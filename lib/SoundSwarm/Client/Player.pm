@@ -1,4 +1,4 @@
-package SoundSwarm::Client::Playing;
+package SoundSwarm::Client::Player;
 
 use SoundSwarm::Syntax;
 use Moo;
@@ -6,7 +6,7 @@ use Moo;
 has port => (
 	is      => 'lazy',
 	isa     => Int,
-	default => sub { 4242 },
+	default => sub { SoundSwarm::PLAYER_PORT },
 );
 
 has host => (
