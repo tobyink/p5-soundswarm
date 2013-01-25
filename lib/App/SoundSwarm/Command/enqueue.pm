@@ -25,17 +25,10 @@ sub opt_spec
 {
 	require SoundSwarm;
 	return (
-		[ "port"    => "TCP port to connect to (default ${\SoundSwarm::QUEUE_PORT()})" ],
-		[ "host"    => "host to connect to" ],
+		[ "port=i"  => "TCP port to connect to (default ${\SoundSwarm::QUEUE_PORT()})" ],
+		[ "host=s"  => "host to connect to" ],
 		[ "stdin|i" => "read filenames from STDIN instead of command line parameters" ],
 	);
-}
-
-sub validate_args
-{
-	my ($self, $opt, $args) = @_;
-	for (@$args) {
-	}
 }
 
 sub execute
@@ -48,13 +41,14 @@ sub execute
 	
 	my @files =
 		map { "$_" }
-		map { -d $_ ? _expand_dir($_) : Path::Class::File->new($_)->absolute }
-		(delete $opt->{stdin} ? <> : @$args);
+		map { -d $_ ? _expand_dir($_) : "Path::Class::File"->new($_)->absolute }
+		map { chomp($_); $_ }
+		(delete $opt->{stdin} ? (my @tmp = <STDIN>) : @$args);
 	
 	for (@files)
 	{
 		$self->usage_error("not a file: $_") unless -f $_;
-		($queue ||= SoundSwarm::Client::Queue->new(%$opt))->enqueue($_);
+		($queue ||= "SoundSwarm::Client::Queue"->new(%$opt))->enqueue($_);
 	}
 }
 
@@ -62,7 +56,7 @@ sub _expand_dir
 {
 	require Path::Class;
 	
-	my $dir = Path::Class::Dir->new($_);
+	my $dir = "Path::Class::Dir"->new($_);
 	my @return;
 	$dir->recurse(callback => sub
 	{

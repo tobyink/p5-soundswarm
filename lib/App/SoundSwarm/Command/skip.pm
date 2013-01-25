@@ -1,4 +1,4 @@
-package App::SoundSwarm::Command::queue;
+package App::SoundSwarm::Command::skip;
 
 use strict;
 use warnings;
@@ -6,12 +6,12 @@ use App::SoundSwarm -command;
 
 sub abstract
 {
-	return "examine the queue";
+	return "skip the current track";
 }
 
 sub command_names
 {
-	return qw( queue q );
+	return qw( skip skidoodle );
 }
 
 sub usage_desc
@@ -25,20 +25,18 @@ sub opt_spec
 {
 	require SoundSwarm;
 	return (
-		[ "port=i"  => "TCP port to connect to (default ${\SoundSwarm::QUEUE_PORT()})" ],
+		[ "port=i"  => "TCP port to connect to (default ${\SoundSwarm::PLAYER_PORT()})" ],
 		[ "host=s"  => "host to connect to" ],
 	);
 }
 
 sub execute
 {
-	require SoundSwarm::Client::Queue;
-	require Path::Class;
+	require SoundSwarm::Client::Player;
 	
 	my ($self, $opt, $args) = @_;
-	my $queue = "SoundSwarm::Client::Queue"->new(%$opt);
-	
-	print "$_\n" for @{ $queue->list };
+	my $player = "SoundSwarm::Client::Player"->new(%$opt);
+	print $player->skip->{status}, "\n";
 }
 
 1;
