@@ -44,11 +44,12 @@ has mplayer => (
 	is      => 'lazy',
 	isa     => InstanceOf[ 'SoundSwarm::MPlayer' ],
 	handles => {
-		play       => 'play',
-		skip       => 'stop',
-		pause      => 'pause',
-		wait       => 'wait',
-		is_playing => 'is_playing',
+		play         => 'play',
+		skip         => 'stop',
+		pause        => 'pause',
+		wait         => 'wait',
+		is_playing   => 'is_playing',
+		current_song => 'current_song',
 	},
 );
 
@@ -68,9 +69,10 @@ sub is_valid_method
 {
 	my ($self, $method) = @_;
 	{
-		pause      => 1,
-		skip       => 1,
-		is_playing => 1,
+		pause        => 1,
+		skip         => 1,
+		is_playing   => 1,
+		current_song => 1,
 	}->{$method};
 }
 

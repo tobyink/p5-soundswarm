@@ -26,6 +26,7 @@ __PACKAGE__->__proxy(qw(
 	pause
 	skip
 	is_playing
+	current_song
 ));
 
 1;

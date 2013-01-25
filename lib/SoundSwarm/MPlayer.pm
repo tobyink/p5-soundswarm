@@ -30,24 +30,39 @@ has fifo => (
 	},
 );
 
+has info => (
+	is      => 'ro',
+	isa     => Str,
+	default => sub {
+		my $info = "File::Spec"->catfile("File::Spec"->tmpdir, 'soundswarm-mplayer.info');
+		1 while unlink $info;
+		return $info;
+	},
+);
+
 sub play
 {
 	my $self = shift;
 	my ($filename) = @_;
 	
 	if (my $pid = fork) {
+		open my $fh, '>', $self->info;
+		print $fh $filename;
+		close $fh;
 		$self->_set_mplayer_pid($pid);
 		return $self;
 	}
 	
-	else {			
+	else {
+		no warnings;
 		exec(
 			$self->mplayer_path,
 			'-slave'        => (),
 			'-input'        => join("=", file => $self->fifo),
 			'-really-quiet' => (),
 			$filename,
-		) or confess "Unable to exec mplayer: $!";
+		);
+		confess "Unable to exec mplayer: $!";
 	}
 }
 
@@ -83,6 +98,13 @@ sub wait
 	my $self = shift;
 	return unless $self->is_playing;
 	waitpid($self->mplayer_pid, 0);
+}
+
+sub current_song
+{
+	my $self = shift;
+	open my $fh, '<', $self->info;
+	scalar <$fh>;
 }
 
 1;
