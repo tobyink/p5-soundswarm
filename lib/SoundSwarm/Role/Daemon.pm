@@ -2,6 +2,8 @@ package SoundSwarm::Role::Daemon;
 
 use SoundSwarm::Syntax;
 use MooX::Role;
+use AnyEvent;
+use AnyEvent::Socket;
 
 use constant {
 	END_CLIENT  => \(1),
@@ -12,53 +14,39 @@ requires 'log';
 requires 'host', 'port';
 requires 'handle_line';
 
-has socket => (
-	is      => 'lazy',
-	isa     => InstanceOf[ 'IO::Socket' ],
-);
-
-sub _build_socket
-{
-	require IO::Socket::INET;
-	my $self = shift;
-	my $sock = 'IO::Socket::INET'->new(
-		Listen     => 5,
-		LocalAddr  => $self->host,
-		LocalPort  => $self->port,
-		Proto      => 'tcp',
-	) or confess "Cannot open socket: $!";
-	return $sock;
-}
-
 sub daemonize
 {
 	my $self = shift;
-	my $sock = $self->socket;
+	$self->log("Listening on %s:%d", $self->host, $self->port);
 	
-	$self->log("Listening on %s:%d", $sock->sockhost, $sock->sockport);
+	my $cv = AnyEvent->condvar;
 	
-	CLIENT: while (1)
+	tcp_server $self->host, $self->port, sub
 	{
-		my $client = $sock->accept;
-		$self->log("Connection from %s:%d", $client->peerhost, $client->peerport);
+		my $client = shift;
+		$self->log("Connection from %s:%d", @_);
 		
 		LINE: while (defined(my $line = <$client>))
 		{
+			warn "SERVER RECV LINE: $line";
 			for my $response ($self->handle_line($line))
 			{
+				warn "SERVER SEND LINE: $response";
 				if (ref $response and $response == END_CLIENT) {
-					$client->close;
 					last LINE;
 				}
 				elsif (ref $response and $response == END_DAEMON) {
-					$client->close;
-					$sock->close;
-					last CLIENT;
+					$cv->send;
+					last LINE;
 				}
-				print {$client} $response;
+				syswrite $client, $response;
 			}
 		}
-	}
+		
+		$self->log("Connection from %s:%d closed!", @_);
+	};
+	
+	$cv->recv;
 }
 
 1;

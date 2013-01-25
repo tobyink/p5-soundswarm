@@ -2,6 +2,8 @@ package SoundSwarm::Daemon::Player;
 
 use SoundSwarm::Syntax;
 use Moo;
+use AnyEvent;
+use Time::HiRes qw(usleep);
 
 has port => (
 	is      => 'lazy',
@@ -13,11 +15,6 @@ has host => (
 	is      => 'lazy',
 	isa     => Str,
 	default => sub { '127.0.0.1' },
-);
-
-has queue_management_process => (
-	is      => 'rwp',
-	isa     => InstanceOf[ 'Async' ],
 );
 
 has queue => (
@@ -128,20 +125,15 @@ sub get_song
 sub start_playing
 {
 	my $self = shift;
-	my $mplayer = $self->mplayer; # force construction
-	my $async   = Async->new(sub
-	{
-		while (1)
-		{
-			my $song = $self->get_song;
-			last unless defined $song;
-			$self->log("Next song: %s", $song);
-			$self->play($song);
-			$self->wait;
-		}
-	});
-	confess $async->error if defined $async->error;
-	$self->_set_queue_management_process($async);
+	my $mplayer = $self->mplayer;
+	
+	my $song = $self->get_song or confess "No song?";
+	$self->log("Next song: %s", $song);
+	$self->play($song);
+	my $w; $w = AnyEvent->child(
+		pid   => $mplayer->mplayer_pid,
+		cb    => sub { $self->start_playing },
+	);
 }
 
 before daemonize => sub
