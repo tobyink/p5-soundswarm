@@ -14,6 +14,25 @@ BEGIN {
 	$SoundSwarm::VERSION   = '0.001';
 }
 
+my $rpc_map = +{};
+
+sub register_procedure_client
+{
+	my ($class, $procedure, $client) = @_;
+	if (exists $rpc_map->{$procedure} and $rpc_map->{$procedure} ne $client)
+	{
+		require Carp;
+		Carp::confess("conflict for procedure '$procedure': $client versus $rpc_map->{$procedure}");
+	}
+	$rpc_map->{$procedure} = $client;
+}
+
+sub get_procedure_client
+{
+	my ($class, $procedure) = @_;
+	$rpc_map->{$procedure};
+}
+
 1;
 
 __END__

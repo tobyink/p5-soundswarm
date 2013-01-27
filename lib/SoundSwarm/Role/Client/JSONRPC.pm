@@ -38,6 +38,7 @@ sub __proxy
 	my $package = shift;
 	for my $method (@_)
 	{
+		"SoundSwarm"->register_procedure_client($method, $package);
 		install_sub {
 			into   => $package,
 			as     => $method,
